@@ -1,0 +1,18 @@
+img,
+video {
+    width: 250px;
+    height: 250px;
+}
+
+.component {
+    position: relative;
+}
+
+.component>i {
+    position: absolute;
+    top: 10px;
+    float: right;
+    right: 15px;
+    color: white;
+    font-size: 20px;
+}

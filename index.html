@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+</head>
+
+<body>
+    <div class="container my-2">
+        <div class="jumbotron">
+            <h3 class="my-3">Link of Instagram post 🎉🎉🎉</h3>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="instagram_url" value="" />
+                <div class="input-group-append">
+                    <button class="btn btn-primary" onclick="getDataIg()">Go</button>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap my-3" id="dataIg"></div>
+    </div>
+
+    <script>
+        async function getDataIg() {
+            var url = $("#instagram_url").val();
+            const url_split = url.split("\/");
+            const short_code = url_split[4];
+
+            var url = `https://www.instagram.com/graphql/query/?query_hash=55a3c4bad29e4e20c20ff4cdfd80f5b4&variables={"shortcode":"${short_code}"}`;
+            var data = await fetch(url);
+            var dataJson = await data.json();
+
+            var shortcode_media = dataJson.data.shortcode_media;
+            var children = dataJson.data.shortcode_media.edge_sidecar_to_children;
+
+            if (children == null) {
+                showSingleIg(shortcode_media);
+            } else {
+                showDataIg(shortcode_media.edge_sidecar_to_children.edges);
+            }
+        }
+        // ig
+        function showSingleIg(single_data) {
+            console.log(single_data);
+            var container = $("#dataIg");
+
+            container.empty();
+
+            if (single_data.is_video) {
+                displayVideo(container, single_data.video_url);
+            } else {
+                displayPhoto(container, single_data.display_url);
+            }
+        }
+
+        function showDataIg(data) {
+            var length = data.length;
+            var container = $("#dataIg");
+
+            container.empty();
+
+            for (let i = 0; i < length; i++) {
+                var data_pointer = data[i].node;
+
+                if (data_pointer != null && data_pointer.is_video) {
+                    displayVideo(container, data_pointer.video_url);
+                } else {
+                    displayPhoto(container, data_pointer.display_url);
+                }
+            }
+        }
+
+        // display
+        function displayVideo(container, video_url) {
+            var children = $(
+                `<div class="component mr-2" style="margin-bottom: 10px">
+                  <video class="rounded" autoplay loop muted>
+                      <source src=${video_url} type="video/mp4">
+                  </video>
+                  <i class="fas fa-video"></i>
+                  <a class="btn btn-secondary btn-block" href="${video_url}&dl=1">
+                      DOWNLOAD
+                  </a>
+              </div>`
+            );
+            container.append(children);
+        }
+
+        function displayPhoto(container, display_url) {
+            var children = $(
+                `<div class="component mr-2" style="margin-bottom: 10px">
+                  <img class="rounded" style="margin-bottom: 6px" src="${display_url}" >
+                  <i class="fas fa-file-image"></i>
+                  <a class="btn btn-secondary btn-block" href="${display_url}&dl=1">
+                      DOWNLOAD
+                  </a>
+              </div>`
+            );
+            container.append(children);
+        }
+    </script>
+</body>
+
+</html>
